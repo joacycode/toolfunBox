@@ -1,12 +1,27 @@
 /* tools.js */
-/* create 2016 | update 2017-03-01 | Author xzhang*/	
-	function serialString(n){//随机序列
+/* create 2016 | update 2017-03-01 | Author xzhang*/
+	//随机序列、数
+	function serialString(n){
 		var randomArray=["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",0,1,2,3,4,5,6,7,8,9],randomStr='';
 		for(var i = 0;i < n;i++){
 			randomStr += !!Math.round(Math.random())?(randomArray[Math.floor(Math.random()*34)]).toString().toUpperCase():randomArray[Math.floor(Math.random()*34)];	
 		}	
 		return randomStr;
 	}
+	//某范围内不重N个随机数
+	function randNum (n) {
+		var mins=2,maxs=32;
+	    var arr = [],resArr = [];
+	    if(!n || n > 31 || n < 1 || typeof n != "number") return false;
+	    for(var j = mins ;j <= maxs; j++){
+	        arr.push(j);
+	    }   
+	    for(var i = 0 ;i < n; i++){
+	        resArr.push(arr.splice(Math.floor(Math.random()*(maxs-mins-i)),1)[0]);
+	    }
+	    return resArr;
+	}
+	// cookie相关
 	function getCookie(name){//有参数获取单个cookie,无参数获取所有cookie数组
 		var members = document.cookie.split(";"),trimArr = [];
 		for(var i = 0;i < members.length;i++){
@@ -44,42 +59,51 @@
 		date.setTime(date.getTime()+exp*24*3600*1000);
 		document.cookie = name+"="+val+"; expires="+date.toGMTString()+"; domain="+domain+"; path="+path+";"
 	}
-	function limitCutter(limitStr,limitNum){//限制字数 规则：2Ch+En <=limitNum
-			var totalNum = limitStr.replace(/[^\x00-\xff]/g, '__').length,//中英文长度 中文算两个
-			 	arrs = limitStr.split(""),
-			 	account = 0,realen = 0;
-			 	if(totalNum <= limitNum){
-			 		return limitStr;
-			 	}else{
-			 		for(var i = 0;i < arrs.length;i++){
-				 		if(account <= limitNum){
-				 			if(!!arrs[i].match(/[\u4e00-\u9fa5]/g) ){
-					 			account = account+2;
-					 		}else{
-					 			account++;
-					 		}
-                            realen++;
-				 		}else{
-                           break;
-                        }
-
-				 	}
-			 		return limitStr.substring(0,realen-1)+"...";
-			 	}
-		}
-	function toast(conts,timer,boxId){//toast计时框
+	//限制字数 规则：2Ch+En <=num
+	function limitCutter(str,num){
+		var tnum = str.replace(/[^\x00-\xff]/g, '__').length,//中英文长度 中文算两个
+	 	arrs = str.split(""),
+	 	account = 0,realen = 0;
+	 	if(tnum <= num) {return str;}
+ 		for(var i = 0;i < arrs.length;i++){
+	 		if(account <= num){
+	 			if((/[\u4e00-\u9fa5]/g).test(arrs[i])){
+		 			account = account+2;
+		 		}else{
+		 			account++;
+		 		}
+                realen++;
+	 		}
+	 	}
+ 		return str.substring(0,realen-1)+"...";
+	}
+	//toast计时框
+	// 	#box_toast{
+	// 	width: 200px;
+	// 	height: 45px;
+	// 	line-height: 45px;
+	// 	position: absolute;
+	// 	top: 50%;
+	// 	left: 50%;
+	// 	z-index: 9999;
+	// 	text-align: center;
+	// 	background: rgba(0, 0, 0, 0.7);
+	// 	color: #fff;
+	// }
+	function toast(conts,timer,boxId){
 		var box_div = document.createElement("div"),box_parent;
 		if(boxId){box_parent = document.getElementById(boxId);}else{ box_parent = document.getElementsByTagName("body")[0];}
 		box_parent.style.position = "relative";
 		box_div.innerHTML = conts;
 		box_div.id = "box_toast";
 		prependChild(box_div,box_parent);
-		box_div.style.marginLeft = -box_div.offsetWidth/2+"px";	
+		box_div.style.marginLeft = -box_div.offsetWidth/2+"px";
 		box_div.style.marginTop =  -box_div.offsetHeight/2+"px";
 		setTimeout(function(){
 			box_parent.removeChild(box_div);
 		}, timer);
 	}
+
 	/* 原生工具延伸函数 */
 	function prependChild(o,s){ 
 		if(s.hasChildNodes()){ 
@@ -95,34 +119,24 @@
 			s.parentNode.appendChild(o); 
 		} 
 	}
-	//某范围内不重N个随机数
-	var randNum = (n,mins=2,maxs=32) => {
-	    if(!n || n > 31 || n < 1 || typeof n != "number") return false;
-	    let arr = [],resArr = [];
-	    for(let j = mins ;j <= maxs; j++){
-	        arr.push(j);
-	    }   
-	    for(let i = 0 ;i < n; i++){
-	        resArr.push(arr.splice(Math.floor(Math.random()*(maxs-mins-i)),1)[0]);
-	    }
-	    return resArr;
-	}
-	// window.history.pushState('forward', null, '#'); //在IE中必须得有这两行
-	//  window.history.forward(1);
+	// 浏览器回退添加事件
+	// 在IE中必须得有这两行
+	// window.history.pushState('forward', null, '#'); 
+	// window.history.forward(1);
 	function backEvent(callback){//回退事件监听 
 		if (window.history && window.history.pushState) {
 			pushHistory(); 
 			window.addEventListener("popstate", function(e) { 
 				callback();
-				window.history.go(-2);
+				window.history.go(-1);
 			}, false); 
-			function pushHistory() { 
-				window.history.pushState({ 
-					title: "title", 
-					url: "#"
-				}, "title", "#"); 
-			} 
 		}
+		function pushHistory() { 
+			window.history.pushState({ 
+				title: "title", 
+				url: "#"
+			}, "title", "#"); 
+		} 
 	}
 
 
